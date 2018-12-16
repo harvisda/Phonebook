@@ -1,0 +1,453 @@
+
+import copy
+
+# Exceptions Cases
+
+
+class MissingPhoneNumberException(Exception):
+    pass
+
+
+class MissingNameException(Exception):
+    pass
+
+
+# contract class creates the nodes
+class Contact():
+    def __init__(self=None, cp=None, name=None, surname=None, hp=None,
+                 wp=None, email=None, ha=None, fav=False):
+        '''() -> NoneType
+        construct a Contact as building block of a single linked list'''
+        self._cp = cp
+        self._name = name
+        self._surname = surname
+        self._hp = hp
+        self._wp = wp
+        self._email = email
+        self._ha = ha
+        self._fav = fav
+        self._info = ''
+        self._primename = ''
+        self._primenumber = ''
+        self._next = None
+
+    def set_info(self, cp, name, surname, hp, wp, email, ha, fav):
+        '''(str,str,str,str,str,str,str,bool) -> NoneType
+        set all of the varibles in the Contact by recieving the given values'''
+        self._cp = cp
+        self._name = name.upper()
+        self._surname = surname.upper()
+        self._hp = hp
+        self._wp = wp
+        self._email = email.upper()
+        self._ha = ha.upper()
+        self._fav = fav
+        self._info = (self._cp + self._name + self._surname + self._hp +
+                      self._wp + self._email + self._ha)
+
+        # change the primary name that the contact will be regeistered under
+        if (surname is not None):
+            self._primename = self._surname
+        elif (name is not None):
+            self._primename = self._name
+        else:
+            raise MissingNameException("No name was given")
+
+        # figure out the the primary number of the contact
+        if (cp is not None):
+            self._primenumber = self._cp
+        elif (hp is not None):
+            self._primenumber = self._hp
+        elif (wp is not None):
+            self._primenumber = self._wp
+        else:
+            raise MissingPhoneNumberException("No phone number was given")
+
+    def get_number(self):
+        '''() -> str
+        return the primary number'''
+        return self._primenumber
+
+    def get_homephone(self):
+        '''() -> str
+        return the next homephone number'''
+        return self._hp
+
+    def get_name(self):
+        '''() -> str
+        return the name that the contact is under'''
+        return self._primename
+
+    def set_next(self, Contact):
+        '''() -> str
+        set the next Node (contact) after this Node (contact)'''
+        self._next = Contact
+
+    def get_next(self):
+        '''() -> str
+        return the next Contact'''
+        return (self._next)
+
+    def get_fav(self):
+        '''() -> bool
+        return whether the contact is under fav'''
+        return self._fav
+
+    def __str__(self):
+        '''() -> str
+        return the name that the contact is under'''
+        return "(" + str(self._primename) + ")"
+
+
+class SingleLinkedList():
+    def __init__(self):
+        pass
+
+
+class PhoneBook(SingleLinkedList):
+    def __init__(self, contact=None):
+        '''(SingleLinkedList) ->NoneType
+        initializes the references of an empty SLL'''
+        self._size = 0
+        self._head = None
+
+    def get_size():
+        '''(SingleLinkedList) -> None
+        return the size of the phonebook'''
+        return self._size
+
+    def appendContact(self, contact):
+        '''(SingleLinkedList, contact) -> None
+        add the contact into the the back of the linked list (no order)'''
+        # make sure, new appended node at end (next_node=None)
+        contact.set_next(None)
+        cur = self._head
+        if self._head is None:
+            self._head = contact
+            return
+        contract = self._head
+        while (cur.get_next() is not None):
+            # proceed to next node
+            cur = cur.get_next()
+        cur.set_next(contact)
+
+    def insert(self, newContact):
+        '''(SingleLinkedList, contact) -> None
+        add the contact into the linked list'''
+        # if the contact is the first in the phonebook
+        if self._head is None:
+            self._head = newContact
+            self._size += 1
+            return
+
+        cur = self._head
+        # head checking new header ONLY, while insert into header
+        if cur.get_name() > newContact.get_name():
+            self._head = newContact
+            newContact.set_next(cur)
+            return
+        # real loop and find out the insert points
+        while (cur.get_next() is not None and cur.get_next().get_name() <
+               newContact.get_name()):
+            cur = cur.get_next()
+
+        # the contact belongs at the end
+        if cur.get_next() is None:
+            cur.set_next(newContact)
+            self._size += 1
+            return
+
+        # the contact belongs in the middle
+        newContact.set_next(cur.get_next())
+        cur.set_next(newContact)
+        self._size += 1
+        return
+
+    def show_fav_list(self):
+        '''(SingleLinkedList, contact) -> None
+        add the contact into the linked list'''
+        # create an empty list to store the names of all the favorite contacts
+        fav_list = []
+        cur = self._head
+        while (cur is not None):
+            if cur.get_fav() is True:
+                fav_list.append(cur.get_name())
+            cur = cur.get_next()
+        return fav_list
+
+    def toronto_phone(self):
+        '''(SingleLinkedList, contact) -> None
+        add the contact into the linked list'''
+        # create two list to hold the phone numbers
+        list_416 = []
+        list_647 = []
+        # loop though the linked list
+        cur = self._head
+        while (cur is not None):
+            # check if the first 3 digits of the contacts primary phone number
+            # is equal to '416' if it is then append into the list
+            if cur.get_number()[0:3] == '416':
+                list_416.append(cur.get_number())
+            # check if the first 3 digits of the contacts primary phone number
+            # is equal to '647' if it is then append into the list
+            elif cur.get_number()[0:3] == '647':
+                list_647.append(cur.get_number())
+            # move cursor
+            cur = cur.get_next()
+        # change the list into a tuple
+        return (tuple(list_416), tuple(list_647))
+
+    def get_head(self):
+        '''(SingleLinkedList) -> None
+        get the head of the linked list'''
+        return self._head
+
+    def remove(self, contact):
+        '''(SingleLinkedList, contact) -> None
+        remove the contact of the linked list'''
+        cur = self._head
+        # case 1: the contact is the header
+        if cur.get_name() == contact.get_name():
+            self._head = self._head.get_next()
+            return contact
+        while (cur is not None):
+            # case 2 the contact is in the middle
+            if cur.get_next().get_name() == contact.get_name():
+                cur.set_next(cur.get_next().get_next())
+            cur = cur.get_next()
+            return contact
+        # case 3: the contact does not exist in the phonebook
+        return None
+
+    def group_remove(self, grouplist):
+        '''(SingleLinkedList, list(Nodes)) -> None
+        remove every contact in list from the phonebook
+        '''
+        # loop through each object in the group list and remove each one
+        # individually
+        for contact in grouplist:
+            harvisPhoneBook.remove(contact)
+
+    def reversed_phonebook(self):
+        '''(SingleLinkedList) -> SingleLinkedList
+        reverse the linked list so that it starts from the back of the linked
+        list
+        '''
+        # create a new list to hold all the nodes in the linked list
+        contact_list = []
+        # loop through each contact in the linked list
+        cur = self._head
+        while (cur is not None):
+            contact_list.append(cur)
+            cur = cur.get_next()
+        print ("size = ", len(contact_list))
+        # reverse the contact list so that it is backwards
+        contact_list.reverse()
+        print (contact_list)
+        # create a new phonebook
+        reversePhoneBook = Phonebook()
+        for item in contact_list:
+            # create a copy of the item containing all pertaining varibles
+            tmpC = copy.deepcopy(item)
+            reversePhoneBook.appendContact(tmpC)
+        return (reversePhoneBook)
+
+    def get_sublist(self, letter):
+        '''(SingleLinkedList, str) -> SingleLinkedList
+        create and return a new phonebook that contains all of the contacts
+        with the name that starts with the given letter'''
+        # create a list to store all contacts with the same letter
+        temp_list = []
+        # loop though the linked list
+        cur = self._head
+        while cur is not None:
+            current_name = cur.get_name()
+            # check if the first letter of name is equal to the given letter
+            if (current_name[0] == letter):
+                temp_list.append(cur)
+            cur = cur.get_next()
+        # create a temp phonebook (linked list) to hold the reversed phonebook
+        temp_sublist = Phonebook()
+        # loop through the temp list and append the nodes into the reverse
+        # phonebook
+        for item in temp_list:
+            tmpC = copy.deepcopy(item)
+            temp_sublist.appendContact(tmpC)
+        return (temp_sublist)
+
+    def get_housemate(self, home_phone):
+        '''(SingleLinkedList, str) -> SingleLinkedList
+        loop through the phonebook to find all the people that live in the same
+        house (have the same home phone number'''
+        # create a temp list to hold all of the names of people in the house
+        house = []
+        cur = self._head
+        while cur is not None:
+            # check of the node has the needed homephone if it does add it to
+            # the list
+            if cur.get_homephone() == home_phone:
+                house.append(cur.get_name())
+            cur = cur.get_next()
+        # create a new phonebook to store the contacts that live in the house
+        temp_book = Phonebook()
+        for item in house:
+            tmpC = copy.deepcopy(item)
+            temp_book.appendContact(tmpC)
+        return (temp_book)
+
+    def rearrange_phonebook(self):
+        '''(SingleLinkedList) -> SingleLinkedList
+        rearange and split the phonebook so that the favorite contacts are at
+        the front of the linked list (phonebook)'''
+        # create 2 different phonebooks one to store the favorites and the
+        # other to store the other contacts
+        fav_phonebook = Phonebook()
+        notfav_phonebook = Phonebook()
+        cur = self._head
+        # split the phonebook depending on if the contact is a favorite
+        while cur is not None:
+            if cur.get_fav() is True:
+                contact = copy.deepcopy(cur)
+                fav_phonebook.appendContact(contact)
+            else:
+                contact = copy.deepcopy(cur)
+                notfav_phonebook.appendContact(contact)
+            cur = cur.get_next()
+
+        # get the header so that you can start a loop
+        curr = notfav_phonebook.get_head()
+        # loop through the not favorite phonebook
+        while curr is not None:
+            contact = copy.deepcopy(curr)
+            # add the node into the favorite linkedlist so that its at the back
+            fav_phonebook.appendContact(contact)
+            curr = curr.get_next()
+        return (fav_phonebook)
+
+    def get_size(self):
+        '''(SingleLinkedList) -> int
+        return the overall size of the linked list
+        '''
+        return self._size
+
+    def sync_phonebook(self, phonebook2):
+        '''(SingleLinkedList, Linkedlist) -> LinkedList
+        combine and merge the 2 linked lists into one linked list if there
+        is the same contact then merge the information depending so that
+        the information is overwritten
+        '''
+        cur_head2 = phonebook2.get_head()
+        cur_head1 = self._head
+        # Read in each element (Contact) from new Phonebook
+        while (cur_head2 is not None):
+            if cur_head1 is None:
+                while cur_head2 is not None:
+                    # Copy over (Append all of Head2 (new phonebook)
+                    # Make new Contact and Append over
+                    tmp_contact = copy.deepcopy(cur_head2)
+                    append(tmp_contact)
+                    cur_head2 = cur_head2.get_next()
+                    return
+            if cur_head1.get_next().get_name < cur_head2.get_name():
+                cur_head1 = cur_head1.get_next()
+            else:
+                if cur_head1.get_next().get_name == cur_head2.get_name():
+                    cur_head1 = cur_head1.get_next()
+                else:
+                    # New contract, not exist in the current phonebook need
+                    tmp_contact = copy.deepcopy(cur_head2)
+                    self.insert(temp_contact)
+                    cur_head1 = cur_head1.get_next()
+                cur_head2 = cur_head2.get_next()
+        return
+
+    def __eq__(self):
+        pass
+
+    def __str__(self):
+        '''(SingleLinkedList) -> str
+        return items in the linked list in a string form Contact after Contact
+        '''
+        cur = self._head
+        while cur is not None:
+            print (cur.get_name())
+            cur = cur.get_next()
+        return '--END--'
+
+
+# required fuctions
+def add(contact):
+    '''(str) -> None
+    add the contact into the linked list
+    REQ: all varibles (additional information) must be in string form expect
+    favorite which is a bool
+    '''
+    Phonebook.insert(contact)
+
+
+def remove(contact):
+    '''(str) -> contact (node)
+    loop through the phonebook to find the contact and then remove that contact
+    from the linked list. if it does not exist then return nothing
+    '''
+    Phonebook.remove(contact)
+
+
+def show_fav_list():
+    '''() -> list
+    show a list containing all of the contacts that have been favorited
+    '''
+    Phonebook.fav_list()
+
+
+def toronto_phone():
+    '''() -> tuple, tuple
+    show 2 tuples containing all of the contacts that have thier primary number
+    under. one tuple that starts with 416, and one with 647
+    '''
+    Phonebook.toronto_phone()
+
+
+def reversed_phonebook():
+    '''() -> linked list
+    reverse all of the contacts in the phonebook so that the new phonebook
+    will start from z and goes to a
+    '''
+    Phonebook.reversed_phone()
+
+
+def group_remove(group):
+    '''(list) -> None
+    remove every contact from the given list from the phonebook
+    '''
+    Phonebook.group_remove(group)
+
+
+def get_sublist(letter):
+    '''(str) -> LinkedList
+    return every contact that begins with the the given letter in a the form of
+    a phonebook'''
+    Phonebook.get_sublist(letter)
+
+
+def get_housemate(home_phone):
+    '''(str) -> LinkedList
+    loop through the each contact in phonebook to find all the people that
+    live in the same house (people that have the same home phone number'''
+    Phonebook.get_housemate(home_phone)
+
+
+def rearrange_phonebook():
+    '''() -> LinkedList
+    rearange and split the current phonebook so that the favorite contacts are
+    at the top of the linked list (phonebook) and the other contacts are after
+    each half are organized alphabetically'''
+    Phonebook.rearrange_phonebook()
+
+
+def sync_phonebook(old_phonebook):
+    '''() -> LinkedList
+    merge the two linkedlist so that the information in the given linkedlist
+    is transfered into the phonebook any contact that is shared inbetween
+    them are the same then merge the information together'''
+    Phonebook.sync_phonebook(old_phonebook)
